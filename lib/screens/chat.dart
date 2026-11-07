@@ -1,8 +1,37 @@
+import 'package:chat_app/widget/chat_message.dart';
+import 'package:chat_app/widget/new_message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
+
+  @override
+  State<ChatScreen> createState() {
+    return _ChatScreen();
+  }
+}
+
+class _ChatScreen extends State<ChatScreen> {
+  void setupPushNotifications() async {
+    final fcm = FirebaseMessaging.instance;
+
+    await fcm.requestPermission();
+
+    await fcm.register(
+      vapidKey: 'BDg1nmqNavPuFuolb0u6844s3huP4HXFjeSscWVd2YOKrwhOutkEtObUCIbHGOH1jvDfbmQUqmnVKEBMUu7YpNM'
+    );
+
+    fcm.subscribeToTopic('chat');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    setupPushNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +41,7 @@ class ChatScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              FirebaseAuth.instance.signOut() ;
+              FirebaseAuth.instance.signOut();
             },
             icon: Icon(
               Icons.exit_to_app,
@@ -21,7 +50,12 @@ class ChatScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Logged in!')),
+      body: Column(
+        children: const [
+          Expanded(child: ChatMessage()),
+          NewMessage(),
+        ],
+      ),
     );
   }
 }
